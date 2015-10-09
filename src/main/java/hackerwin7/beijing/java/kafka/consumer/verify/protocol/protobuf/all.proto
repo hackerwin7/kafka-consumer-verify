@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+import "hackerwin7/beijing/java/kafka/consumer/verify/protocol/protobuf/common.proto";
+
+package hackerwin7.beijing.java.kafka.consumer.verify.protocol.protobuf;
+
+message sub_msg {
+	enum MsgType {
+		PV = 0;
+		PERFORM = 1;
+		CLICK = 2;
+		ORDER = 3;
+  	}
+
+  	required uint32 type = 1;
+  	repeated pair field = 2;
+}
+
+message all_msg {
+  	repeated pair field = 1;
+  	repeated sub_msg data = 2;
+}
+

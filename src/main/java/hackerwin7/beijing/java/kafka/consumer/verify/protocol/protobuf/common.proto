@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package hackerwin7.beijing.java.kafka.consumer.verify.protocol.protobuf;
+
+message pair {
+	required string key = 1;
+	required string val = 2;
+}
+
+message pairs {
+	repeated pair field = 1;
+}
+
