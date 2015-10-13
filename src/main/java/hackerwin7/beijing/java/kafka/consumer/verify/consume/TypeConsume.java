@@ -189,6 +189,10 @@ public class TypeConsume {
             run(queue, consumers);
             logger.info("queue size = " + queue.size() + ", sleeping 2000 ms......");
             Thread.sleep(2000);
+            if(queue.isEmpty() && getAllEnd(consumers)) {// it is really system exit symbol, ensure the simple consumer is stop and the queue is empty
+                logger.info("reached end offset, exit the consume queue process ...... ");
+                running = false;
+            }
         }
     }
 
@@ -203,11 +207,6 @@ public class TypeConsume {
         while (!queue.isEmpty()) {
             readNum++;
             KafkaData data = queue.take();
-            if(getAllEnd(consumers)) {
-                logger.info("reached end offset, exit the process ......");
-                running = false;
-                break;
-            }
             ConsumeData cdata = ConsumeData.parseFrom(consumeType, data);
             if(cdata == null) {
                 continue;
