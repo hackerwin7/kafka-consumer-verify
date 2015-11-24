@@ -20,16 +20,22 @@ public class KafkaData {
         return topic;
     }
 
+    public byte[] getKey() {
+        return key;
+    }
+
+    private byte[] key;
     private byte[] value;
     private long offset;
     private int partition;
     private String topic;
 
-    public KafkaData(long _offset, byte[] _value, int _par, String _topic) {
+    public KafkaData(long _offset, byte[] _key, byte[] _value, int _par, String _topic) {
         offset = _offset;
         value = _value;
         partition = _par;
         topic = _topic;
+        key = _key;
     }
 
 }

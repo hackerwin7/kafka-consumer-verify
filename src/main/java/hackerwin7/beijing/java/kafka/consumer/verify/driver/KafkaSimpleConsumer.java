@@ -94,6 +94,7 @@ public class KafkaSimpleConsumer {
             int port = jInfo.getInt("port");
             brokerList.add(host + ":" + port);
         }
+        zk.close();//close the zk connection properly
     }
 
     /**
@@ -307,10 +308,13 @@ public class KafkaSimpleConsumer {
                         continue;
                     }
                     readOffset = message.nextOffset();
+                    ByteBuffer keyload = message.message().key();
+                    byte[] key = new byte[keyload.limit()];
+                    keyload.get(key);
                     ByteBuffer payload = message.message().payload();
                     byte[] value = new byte[payload.limit()];
                     payload.get(value);
-                    KafkaData data = new KafkaData(currentOffset, value, partition, topic);
+                    KafkaData data = new KafkaData(currentOffset, key, value, partition, topic);
                     queue.put(data);
                     numRead++;
                 }

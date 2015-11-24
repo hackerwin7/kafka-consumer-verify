@@ -41,6 +41,8 @@ public class ConsumeData {
     private String topic = null;
     private long partitionNum = 0;
 
+    private String kKey = null;
+
     /*data*/
     private long mid = 0;
     private String prePos = null;
@@ -62,6 +64,7 @@ public class ConsumeData {
         res.append("-----> topic = ").append(topic).append(", ")
                 .append("partition = ").append(partitionNum).append(", ")
                 .append("offset = ").append(offset).append(", ")
+                .append("key = ").append(kKey).append(", ")
                 .append("ip = ").append(ip).append(", ")
                 .append("db = ").append(dbname).append(", ")
                 .append("tb = ").append(tbname).append(", ")
@@ -111,6 +114,7 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
+            data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EventEntryAvro entry = EntryAvroUtils.bytes2Avro(value);
             if(entry == null) {
@@ -173,6 +177,7 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
+            data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EntryData.Entry entry = EntryProtobufUtils.bytes2Protobuf(value);
             if(entry == null) {
@@ -207,6 +212,7 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
+            data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EventEntry.RowMsg rowMsgEntry = EventEntry.RowMsg.parseFrom(value);
             if(rowMsgEntry == null) {
@@ -359,6 +365,10 @@ public class ConsumeData {
         return partitionNum;
     }
 
+    public String getkKey() {
+        return kKey;
+    }
+
 
     public void setTopic(String topic) {
         this.topic = topic;
@@ -398,6 +408,10 @@ public class ConsumeData {
 
     public void setPartitionNum(long partitionNum) {
         this.partitionNum = partitionNum;
+    }
+
+    public void setkKey(String kKey) {
+        this.kKey = kKey;
     }
 
 

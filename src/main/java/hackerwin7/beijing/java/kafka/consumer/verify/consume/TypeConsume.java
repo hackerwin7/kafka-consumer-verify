@@ -178,9 +178,13 @@ public class TypeConsume {
                 offset = offsets.get(i);
             }
             long endOffset = Long.MAX_VALUE;
-            if(i <= (endOffsets.size() - 1)) {
-                endOffset = endOffsets.get(i);
-            }
+//            //old code
+//            if(i <= (endOffsets.size() - 1)) {
+//                endOffset = endOffsets.get(i);
+//            }
+            //new code , it should get(partition)
+            if(i <= (endOffsets.size() - 1))
+                endOffset = endOffsets.get(partition);
             KafkaSimpleConsumer consumer = new KafkaSimpleConsumer(queue, zkServers, zkRoot);
             consumer.start(topic, partition, offset, endOffset);
             consumers.add(consumer);
@@ -214,7 +218,7 @@ public class TypeConsume {
             //show internal header
             if(fnum > 0) {
                 if(readNum % fnum == 0) {
-                    logger.info(fnum + " ~~~~~~~~~~~~ internal : topic = " + cdata.getTopic() + ", partition = " + cdata.getPartitionNum() + ", offset = " + cdata.getOffset() + ", ip = " + cdata.getIp() +
+                    logger.info(fnum + " ~~~~~~~~~~~~ internal : topic = " + cdata.getTopic() + ", partition = " + cdata.getPartitionNum() + ", offset = " + cdata.getOffset() + ", key = " + cdata.getkKey() + ", ip = " + cdata.getIp() +
                             " db = " + cdata.getDbname() + ", tb = " + cdata.getTbname() + ", timestamp = " + cdata.getTimestamp());
                 }
             }
