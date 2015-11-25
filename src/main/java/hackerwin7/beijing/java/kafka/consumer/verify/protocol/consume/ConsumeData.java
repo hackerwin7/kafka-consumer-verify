@@ -114,7 +114,10 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
-            data.setkKey(new String(kd.getKey()));
+            if(kd.getKey() == null)
+                data.setkKey(null);
+            else
+                data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EventEntryAvro entry = EntryAvroUtils.bytes2Avro(value);
             if(entry == null) {
@@ -177,7 +180,10 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
-            data.setkKey(new String(kd.getKey()));
+            if(kd.getKey() == null)
+                data.setkKey(null);
+            else
+                data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EntryData.Entry entry = EntryProtobufUtils.bytes2Protobuf(value);
             if(entry == null) {
@@ -212,7 +218,10 @@ public class ConsumeData {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
-            data.setkKey(new String(kd.getKey()));
+            if(kd.getKey() == null)
+                data.setkKey(null);
+            else
+                data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
             EventEntry.RowMsg rowMsgEntry = EventEntry.RowMsg.parseFrom(value);
             if(rowMsgEntry == null) {

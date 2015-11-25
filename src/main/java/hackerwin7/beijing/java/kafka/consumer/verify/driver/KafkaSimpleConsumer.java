@@ -308,9 +308,12 @@ public class KafkaSimpleConsumer {
                         continue;
                     }
                     readOffset = message.nextOffset();
-                    ByteBuffer keyload = message.message().key();
-                    byte[] key = new byte[keyload.limit()];
-                    keyload.get(key);
+                    byte[] key = null;
+                    if(message.message().hasKey()) {
+                        ByteBuffer keyload = message.message().key();
+                        key = new byte[keyload.limit()];
+                        keyload.get(key);
+                    }
                     ByteBuffer payload = message.message().payload();
                     byte[] value = new byte[payload.limit()];
                     payload.get(value);
