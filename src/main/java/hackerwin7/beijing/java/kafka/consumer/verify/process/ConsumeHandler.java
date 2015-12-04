@@ -27,6 +27,8 @@ public class ConsumeHandler {
     private static String ips = null;//ip1,ip2,ip3
     private static String filterNum = null;//single number for internal 0 is print everyone
     private static String consumeType = null;//avro,protobuf,rowdataProtobuf
+    private static String appid = null;
+    private static String token = null;
 
     public static void main(String[] args) throws Exception {
         PropertyConfigurator.configure(file2in("log4j.properties", "config.log4j"));
@@ -44,7 +46,9 @@ public class ConsumeHandler {
         consume.setIps(ips);
         consume.setFnum(filterNum);
         consume.setConsumeType(consumeType);
-        consume.startMulty();
+        consume.setAppid(appid);
+        consume.setToken(token);
+        consume.start();
     }
 
     private static void initFile() throws Exception {
@@ -63,6 +67,8 @@ public class ConsumeHandler {
         ips = pro.getProperty("filter.ips");
         filterNum = pro.getProperty("filter.num");
         consumeType = pro.getProperty("consume.type");
+        appid = pro.getProperty("kafka.appid");
+        token = pro.getProperty("kafka.token");
         is.close();
     }
 

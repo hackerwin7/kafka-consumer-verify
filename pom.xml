@@ -44,6 +44,11 @@
             <artifactId>magpie-job-framework</artifactId>
             <version>1.5-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.jd.bdp</groupId>
+            <artifactId>jdq</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

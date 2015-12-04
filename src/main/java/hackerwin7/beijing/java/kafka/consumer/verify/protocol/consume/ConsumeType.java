@@ -6,5 +6,6 @@ package hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume;
 public enum ConsumeType {
     AVRO,
     PROTOBUF,
-    ROW_PROTOBUF
+    ROW_PROTOBUF,
+    APPTOKEN
 }

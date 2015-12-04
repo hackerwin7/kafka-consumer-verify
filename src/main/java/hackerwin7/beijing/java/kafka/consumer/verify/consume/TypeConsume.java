@@ -1,8 +1,10 @@
 package hackerwin7.beijing.java.kafka.consumer.verify.consume;
 
+import hackerwin7.beijing.java.kafka.consumer.verify.driver.AppidTokenConsumer;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaData;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaSimpleConsumer;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume.ConsumeData;
+import hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume.ConsumeType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by hp on 9/23/15.
@@ -38,9 +41,23 @@ public class TypeConsume {
     private Set<String> ips = new HashSet<String>();
     private int fnum = 0;
     private String consumeType = null;
+    private String appid = null;
+    private String token = null;
 
     /*controller*/
     private boolean running = true;
+
+    public void setAppid(String _appid) {
+        if(StringUtils.isBlank(_appid)) {
+            appid = _appid;
+        }
+    }
+
+    public void setToken(String _token) {
+        if(!StringUtils.isBlank(_token)) {
+            token = _token;
+        }
+    }
 
     public void setZks(String zks) throws Exception {
         if(!StringUtils.isBlank(zks)) {
@@ -156,6 +173,17 @@ public class TypeConsume {
     }
 
     /**
+     * start the consumer
+     * @throws Exception
+     */
+    public void start() throws Exception {
+        if(StringUtils.equalsIgnoreCase(consumeType, ConsumeType.APPTOKEN.toString()))
+            startAppToken();
+        else
+            startMulty();
+    }
+
+    /**
      * start multiple consumer
      * @throws Exception
      */
@@ -190,7 +218,7 @@ public class TypeConsume {
             consumers.add(consumer);
         }
         while (running) {
-            run(queue, consumers);
+            run(queue);
             logger.info("queue size = " + queue.size() + ", sleeping 2000 ms......");
             Thread.sleep(2000);
             if(queue.isEmpty() && getAllEnd(consumers)) {// it is really system exit symbol, ensure the simple consumer is stop and the queue is empty
@@ -201,12 +229,51 @@ public class TypeConsume {
     }
 
     /**
-     * parse the consume data
-     * @param queue
-     * @param consumers
+     * start jdq app token
      * @throws Exception
      */
-    private void run(BlockingQueue<KafkaData> queue, List<KafkaSimpleConsumer> consumers) throws Exception {
+    public void startAppToken() throws Exception {
+        if(StringUtils.isBlank(appid) || StringUtils.isBlank(token)) {
+            throw new Exception("appid and token is null......");
+        } else {
+            //init
+            AppidTokenConsumer consumer = new AppidTokenConsumer(appid, token);
+            BlockingQueue<KafkaData> queue = new LinkedBlockingQueue<KafkaData>(AppidTokenConsumer.QUEUE_SIZE);
+            //set consumer
+            consumer.setQueue(queue);
+            for(int i = 0; i <= partitions.size() - 1; i++) {
+                int partition = partitions.get(i);
+                //default settings
+                long offset = Long.MAX_VALUE;
+                long endOffset = Long.MAX_VALUE;
+                //customer setttings
+                if(i <= offsets.size() - 1)
+                    offset = offsets.get(i);
+                if(i <= endOffsets.size() - 1)
+                    endOffset = endOffsets.get(i);
+                consumer.putPos(partition, offset);
+                consumer.putPos(partition, endOffset);
+                consumer.start();
+            }
+            while (running) {
+                run(queue);
+                logger.info("queue size = " + queue.size() + ", sleepping 2000 ms");
+                Thread.sleep(2000);
+                if(queue.isEmpty() && !consumer.isRunning()) {
+                    logger.info("consumer stopped, stopping the System......");
+                    running = false;
+                    System.exit(0);
+                }
+            }
+        }
+    }
+
+    /**
+     * parse the consume data
+     * @param queue
+     * @throws Exception
+     */
+    private void run(BlockingQueue<KafkaData> queue) throws Exception {
         long readNum = 0;
         while (!queue.isEmpty()) {
             readNum++;
