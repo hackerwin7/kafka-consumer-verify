@@ -1,6 +1,15 @@
 package hackerwin7.beijing.java.kafka.consumer.verify.driver;
 
+import com.depend.jdq.fastjson.JSON;
+import com.depend.jdq.fastjson.JSONObject;
+import com.depend.jdq.http.HttpEntity;
+import com.depend.jdq.http.HttpResponse;
+import com.depend.jdq.http.HttpStatus;
+import com.depend.jdq.http.auth.AuthenticationException;
 import com.depend.jdq.http.client.HttpClient;
+import com.depend.jdq.http.client.methods.HttpGet;
+import com.depend.jdq.http.impl.client.DefaultHttpClient;
+import com.depend.jdq.http.util.EntityUtils;
 import com.jd.bdp.jdq.auth.Authentication;
 import com.jd.bdp.jdq.consumer.JDQSimpleConsumer;
 import com.jd.bdp.jdq.consumer.simple.JDQSimpleMessage;
@@ -34,6 +43,10 @@ public class AppidTokenConsumer {
     public static final String TOKEN_STR = "\",\"token\":\"";
     public static final String IP_STR = "\",\"ip\":\"127.0.0.1\"}";
     public static final String DEFAULT_CHARSET_STR = "UTF-8";
+    public static final String JDQ_AUTH_ZK_ROOT_KEY = "zkRoot";
+    public static final String JDQ_AUTH_TOPIC_KEY = "topic";
+    public static final String JDQ_AUTH_BROKERS_KEY = "brokers";
+    public static final String JDQ_AUTH_OBJ_KEY = "obj";
 
     /*logger*/
     private Logger logger = Logger.getLogger(AppidTokenConsumer.class);
@@ -64,7 +77,22 @@ public class AppidTokenConsumer {
      */
     public static KafkaInfo getInfo(String appid, String token) throws Exception {
         String url = AUTHENTICATION_URL + URLEncoder.encode(APPID_STR + appid + TOKEN_STR + token + IP_STR, DEFAULT_CHARSET_STR);
-        HttpClient
+        HttpClient client = new DefaultHttpClient();
+        HttpGet get = null;
+        get = new HttpGet(url);
+        HttpResponse res = client.execute(get);
+        if(res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            HttpEntity entity = res.getEntity();
+            JSONObject jmsg = JSON.parseObject(EntityUtils.toString(entity, "UTF-8"));
+            JSONObject jdata = jmsg.getJSONObject(JDQ_AUTH_OBJ_KEY);
+            KafkaInfo info = new KafkaInfo();
+            info.zks = jdata.getString(JDQ_AUTH_ZK_ROOT_KEY);
+            info.topic = jdata.getString(JDQ_AUTH_TOPIC_KEY);
+            info.brokers = jdata.getString(JDQ_AUTH_BROKERS_KEY);
+            return info;
+        } else {
+            throw new AuthenticationException("conn failed, please config the correct host, error code = " + res.getStatusLine().getStatusCode());
+        }
     }
 
     /**
@@ -72,7 +100,7 @@ public class AppidTokenConsumer {
      * @param _appid
      * @param _token
      */
-    public AppidTokenConsumer(String _appid, String _token)cp
+    public AppidTokenConsumer(String _appid, String _token) {
         appid = _appid;
         token = _token;
         try {
@@ -104,8 +132,12 @@ public class AppidTokenConsumer {
      */
     public void start() throws Exception {
         logger.info("start the jdq consumer using appid = " + appid + ", token = " + token + " ......");
+        logger.info("kafka info => " + getInfo(appid, token).toString());
         logger.info("min offsets => " + seeMap(minPosPool));
         logger.info("max offsets => " + seeMap(maxPosPool));
+        logger.info("load offsets => " + seeMap(posPool));
+        logger.info("after default strategy, reset the load offset......");
+        offsetStrategy();
         logger.info("load offsets => " + seeMap(posPool));
         thCon = new Thread(new Runnable() {
             public void run() {
@@ -131,7 +163,7 @@ public class AppidTokenConsumer {
         while (running) {
             boolean continueZero = true;
             for(Map.Entry<Integer, Long> entry : posPool.entrySet()) {
-                int partition = entry.getKey();
+                final int partition = entry.getKey();
                 long offset = entry.getValue();
                 //if consume the offset to the end offset, then do not consume
                 if(offset > endPosPool.get(partition)) {
@@ -155,7 +187,12 @@ public class AppidTokenConsumer {
                             closest = l1;
                         else
                             closest = l2;
-                        logger.info("reset to the closest offset = " + closest);
+                        logger.info("reset to the closest offset = " + closest + ", in partition = " + partition);
+                        try {
+                            Thread.sleep(SLEEPING_INTERVAL);
+                        } catch (InterruptedException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                         return closest;
                     }
                 });
@@ -179,6 +216,32 @@ public class AppidTokenConsumer {
             if(continueZero) {
                 Thread.sleep(SLEEPING_INTERVAL);
             }
+        }
+    }
+
+    private void offsetStrategy() {
+        for(Map.Entry<Integer, Long> entry : posPool.entrySet()) {
+            int partition = entry.getKey();
+            long offset = entry.getValue();
+            long minOffset = minPosPool.get(partition);
+            long maxOffset = maxPosPool.get(partition);
+            long endOffset = endPosPool.get(partition);
+            //offset
+            if(offset < minOffset) {
+                posPool.put(partition, minOffset);
+            } else if(offset > maxOffset) {
+                posPool.put(partition, maxOffset);
+            } else {
+                /*no op*/
+            }
+            //update
+            offset = posPool.get(partition);
+            //end offset
+            if(endOffset < offset) {
+                endPosPool.put(partition, Long.MAX_VALUE);
+            }
+            //update
+            endOffset = endPosPool.get(partition);
         }
     }
 

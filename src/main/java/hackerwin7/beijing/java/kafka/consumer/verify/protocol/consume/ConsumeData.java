@@ -1,6 +1,7 @@
 package hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume;
 
 import com.jd.bdp.magpie.eggs.job.framework.impl.mysql.protocol.protobuf.EventEntry;
+import com.jd.jmq.client.consumer.ConsumerType;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaData;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.avro.EntryAvroUtils;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.avro.EventEntryAvro;
@@ -49,6 +50,9 @@ public class ConsumeData {
     private String curPos = null;
     private String checknode = null;
 
+    /*string*/
+    private String strVal = null;
+
     /*consume type*/
     private ConsumeType consumeType = null;
 
@@ -89,13 +93,16 @@ public class ConsumeData {
             res.append("-------> src = " + src + "\n");
             res.append("-------> cur = " + cur + "\n");
         }
-        if(consumeType == ConsumeType.AVRO || consumeType == ConsumeType.APPTOKEN) {
+        if(consumeType == ConsumeType.AVRO) {
             res.append("-------> cus = " + cus + "\n");
             res.append("-------> check = " + checknode + "\n");
         }
         if(consumeType == ConsumeType.ROW_PROTOBUF) {
             res.append("-------> pre pos = " + prePos + "\n");
             res.append("-------> cur pos = " + curPos + "\n");
+        }
+        if(consumeType == ConsumeType.STRING) {
+            res.append("-------> string val = " + strVal + "\n");
         }
         res.delete(res.length() - 1, res.length());
         return res.toString();
@@ -244,7 +251,7 @@ public class ConsumeData {
             data.setPrePos(pos2Str(rowMsgEntry.getLastPos()));
             data.setCurPos(pos2Str(rowMsgEntry.getCurPos()));
             data.setConsumeType(ConsumeType.ROW_PROTOBUF);
-        } else if(StringUtils.equalsIgnoreCase(cType, ConsumeType.APPTOKEN.toString())) {
+        } else if(StringUtils.equalsIgnoreCase(cType, ConsumeType.STRING.toString())) {
             data.setTopic(kd.getTopic());
             data.setPartitionNum(kd.getPartition());
             data.setOffset(kd.getOffset());
@@ -253,63 +260,9 @@ public class ConsumeData {
             else
                 data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
-            EventEntryAvro entry = EntryAvroUtils.bytes2Avro(value);
-            if(entry == null) {
-                return null;
-            }
-            Map<String, String> cussp = new HashMap<String, String>();
-            for(Map.Entry<CharSequence, CharSequence> elem : entry.getCus().entrySet()) {
-                String key = elem.getKey().toString();
-                String val = elem.getValue().toString();
-                cussp.put(key, val);
-            }
-            data.setIp(cussp.get("ip"));
-            data.setDbname(entry.getDb().toString());
-            data.setTbname(entry.getTab().toString());
-            if(cussp.containsKey("ft")) {
-                data.setTimestamp(Long.valueOf(cussp.get("ft")));
-            }
-            if(cussp.containsKey("dmlts")) {
-                data.setTimestamp(Long.valueOf(cussp.get("dmlts")));
-            }
-            data.setType(entry.getOpt().toString());
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getSrc().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
-                }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getSrc().put(key, val);
-            }
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getCur().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
-                }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getCur().put(key, val);
-            }
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getCus().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
-                }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getCus().put(key, val);
-            }
-            data.setMid(entry.getMid());
-            data.setChecknode(cussp.get("check"));
-            data.setConsumeType(ConsumeType.APPTOKEN);
-        } else {
+            data.setStrVal(new String(value));
+        }
+        else {
             /*no op*/
         }
         return data;
@@ -486,6 +439,10 @@ public class ConsumeData {
 
     public void setkKey(String kKey) {
         this.kKey = kKey;
+    }
+
+    public void setStrVal(String val) {
+        strVal = val;
     }
 
 

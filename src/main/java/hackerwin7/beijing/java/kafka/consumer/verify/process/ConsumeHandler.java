@@ -27,6 +27,7 @@ public class ConsumeHandler {
     private static String ips = null;//ip1,ip2,ip3
     private static String filterNum = null;//single number for internal 0 is print everyone
     private static String consumeType = null;//avro,protobuf,rowdataProtobuf
+    private static String consumeStrategy = null;
     private static String appid = null;
     private static String token = null;
 
@@ -46,6 +47,7 @@ public class ConsumeHandler {
         consume.setIps(ips);
         consume.setFnum(filterNum);
         consume.setConsumeType(consumeType);
+        consume.setConsumeStrategy(consumeStrategy);
         consume.setAppid(appid);
         consume.setToken(token);
         consume.start();
@@ -55,20 +57,21 @@ public class ConsumeHandler {
         InputStream is = file2in("consume.properties", "config.conf");
         Properties pro = new Properties();
         pro.load(is);
-        zks = pro.getProperty("kafka.zookeeper");
-        topic = pro.getProperty("kafka.topic");
-        partitions = pro.getProperty("kafka.partitions");
-        offsets = pro.getProperty("kafka.offsets");
-        endOffsets = pro.getProperty("kafka.offsets.end");
-        dbnames = pro.getProperty("filter.dbnames");
-        tbname = pro.getProperty("filter.tbnames");
-        kvs = pro.getProperty("filter.kvs");
-        mids = pro.getProperty("filter.mids");
-        ips = pro.getProperty("filter.ips");
-        filterNum = pro.getProperty("filter.num");
-        consumeType = pro.getProperty("consume.type");
-        appid = pro.getProperty("kafka.appid");
-        token = pro.getProperty("kafka.token");
+        zks = pro.getProperty("kafka.zookeeper").trim();
+        topic = pro.getProperty("kafka.topic").trim();
+        partitions = pro.getProperty("kafka.partitions").trim();
+        offsets = pro.getProperty("kafka.offsets").trim();
+        endOffsets = pro.getProperty("kafka.offsets.end").trim();
+        dbnames = pro.getProperty("filter.dbnames").trim();
+        tbname = pro.getProperty("filter.tbnames").trim();
+        kvs = pro.getProperty("filter.kvs").trim();
+        mids = pro.getProperty("filter.mids").trim();
+        ips = pro.getProperty("filter.ips").trim();
+        filterNum = pro.getProperty("filter.num").trim();
+        consumeType = pro.getProperty("consume.data.type").trim();
+        consumeStrategy = pro.getProperty("consume.strategy").trim();
+        appid = pro.getProperty("kafka.appid").trim();
+        token = pro.getProperty("kafka.token").trim();
         is.close();
     }
 

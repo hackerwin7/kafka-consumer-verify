@@ -2,8 +2,10 @@ package hackerwin7.beijing.java.kafka.consumer.verify.consume;
 
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.AppidTokenConsumer;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaData;
+import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaInfo;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaSimpleConsumer;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume.ConsumeData;
+import hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume.ConsumeStrategy;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume.ConsumeType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -43,12 +45,18 @@ public class TypeConsume {
     private String consumeType = null;
     private String appid = null;
     private String token = null;
+    private String consumeStrategy = "kafka";
 
     /*controller*/
     private boolean running = true;
 
+    public void setConsumeStrategy(String _consumeStrategy) {
+        if(!StringUtils.isBlank(_consumeStrategy))
+            consumeStrategy = _consumeStrategy;
+    }
+
     public void setAppid(String _appid) {
-        if(StringUtils.isBlank(_appid)) {
+        if(!StringUtils.isBlank(_appid)) {
             appid = _appid;
         }
     }
@@ -177,17 +185,19 @@ public class TypeConsume {
      * @throws Exception
      */
     public void start() throws Exception {
-        if(StringUtils.equalsIgnoreCase(consumeType, ConsumeType.APPTOKEN.toString()))
+        if(StringUtils.equalsIgnoreCase(consumeStrategy, ConsumeStrategy.KAFKA.toString()))
+            startMulty();
+        else if(StringUtils.equalsIgnoreCase(consumeStrategy, ConsumeStrategy.APPTOKEN.toString()))
             startAppToken();
         else
-            startMulty();
+            throw new Exception("Unknown consume strategy = " + consumeStrategy);
     }
 
     /**
      * start multiple consumer
      * @throws Exception
      */
-    public void startMulty() throws Exception {
+    private void startMulty() throws Exception {
         String ss[] = zks.split("/");
         String zkServers, zkRoot;
         if(ss.length == 2) {
@@ -232,7 +242,7 @@ public class TypeConsume {
      * start jdq app token
      * @throws Exception
      */
-    public void startAppToken() throws Exception {
+    private void startAppToken() throws Exception {
         if(StringUtils.isBlank(appid) || StringUtils.isBlank(token)) {
             throw new Exception("appid and token is null......");
         } else {

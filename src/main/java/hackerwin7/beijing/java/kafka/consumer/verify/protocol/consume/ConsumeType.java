@@ -7,5 +7,5 @@ public enum ConsumeType {
     AVRO,
     PROTOBUF,
     ROW_PROTOBUF,
-    APPTOKEN
+    STRING
 }
