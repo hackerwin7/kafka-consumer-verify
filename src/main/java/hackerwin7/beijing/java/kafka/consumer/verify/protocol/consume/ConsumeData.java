@@ -44,6 +44,8 @@ public class ConsumeData {
 
     private String kKey = null;
 
+    private byte[] value = null;
+
     /*data*/
     private long mid = 0;
     private String prePos = null;
@@ -74,7 +76,8 @@ public class ConsumeData {
                 .append("tb = ").append(tbname).append(", ")
                 .append("timestamp = ").append(timestamp).append(", ")
                 .append("type = ").append(type).append(", ").append(", ")
-                .append("mid = ").append(mid);
+                .append("mid = ").append(mid)
+                .append("value length = ").append(value.length);
         return res.toString();
 
     }
@@ -126,6 +129,7 @@ public class ConsumeData {
             else
                 data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
+            data.setValue(value);
             EventEntryAvro entry = EntryAvroUtils.bytes2Avro(value);
             if(entry == null) {
                 return null;
@@ -147,38 +151,44 @@ public class ConsumeData {
                 data.setTimestamp(Long.valueOf(cussp.get("dmlts")));
             }
             data.setType(entry.getOpt().toString());
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getSrc().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
+            if(entry.getSrc() != null) { // src mayby null
+                for (Map.Entry<CharSequence, CharSequence> et : entry.getSrc().entrySet()) {
+                    String key = "";
+                    if (et.getKey() != null) {
+                        key = et.getKey().toString();
+                    }
+                    String val = "";
+                    if (et.getValue() != null) {
+                        val = et.getValue().toString();
+                    }
+                    data.getSrc().put(key, val);
                 }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getSrc().put(key, val);
             }
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getCur().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
+            if(entry.getCur() != null) {
+                for (Map.Entry<CharSequence, CharSequence> et : entry.getCur().entrySet()) {
+                    String key = "";
+                    if (et.getKey() != null) {
+                        key = et.getKey().toString();
+                    }
+                    String val = "";
+                    if (et.getValue() != null) {
+                        val = et.getValue().toString();
+                    }
+                    data.getCur().put(key, val);
                 }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getCur().put(key, val);
             }
-            for(Map.Entry<CharSequence, CharSequence> et : entry.getCus().entrySet()) {
-                String key = "";
-                if(et.getKey() != null) {
-                    key = et.getKey().toString();
+            if(entry.getCus() != null) {
+                for (Map.Entry<CharSequence, CharSequence> et : entry.getCus().entrySet()) {
+                    String key = "";
+                    if (et.getKey() != null) {
+                        key = et.getKey().toString();
+                    }
+                    String val = "";
+                    if (et.getValue() != null) {
+                        val = et.getValue().toString();
+                    }
+                    data.getCus().put(key, val);
                 }
-                String val = "";
-                if(et.getValue() != null) {
-                    val = et.getValue().toString();
-                }
-                data.getCus().put(key, val);
             }
             data.setMid(entry.getMid());
             data.setChecknode(cussp.get("check"));
@@ -192,6 +202,7 @@ public class ConsumeData {
             else
                 data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
+            data.setValue(value);
             EntryData.Entry entry = EntryProtobufUtils.bytes2Protobuf(value);
             if(entry == null) {
                 return null;
@@ -230,6 +241,7 @@ public class ConsumeData {
             else
                 data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
+            data.setValue(value);
             EventEntry.RowMsg rowMsgEntry = EventEntry.RowMsg.parseFrom(value);
             if(rowMsgEntry == null) {
                 return null;
@@ -260,6 +272,7 @@ public class ConsumeData {
             else
                 data.setkKey(new String(kd.getKey()));
             byte[] value = kd.getValue();
+            data.setValue(value);
             data.setStrVal(new String(value));
         }
         else {
@@ -445,5 +458,7 @@ public class ConsumeData {
         strVal = val;
     }
 
-
+    public void setValue(byte[] value) {
+        this.value = value;
+    }
 }

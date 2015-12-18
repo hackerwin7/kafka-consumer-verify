@@ -251,6 +251,10 @@ public class TypeConsume {
             BlockingQueue<KafkaData> queue = new LinkedBlockingQueue<KafkaData>(AppidTokenConsumer.QUEUE_SIZE);
             //set consumer
             consumer.setQueue(queue);
+            //if partition not set, set default for apptoken and id
+            if(partitions.size() == 0) {
+                throw new Exception("set partition first !!!");
+            }
             for(int i = 0; i <= partitions.size() - 1; i++) {
                 int partition = partitions.get(i);
                 //default settings
@@ -288,7 +292,14 @@ public class TypeConsume {
         while (!queue.isEmpty()) {
             readNum++;
             KafkaData data = queue.take();
-            ConsumeData cdata = ConsumeData.parseFrom(consumeType, data);
+            ConsumeData cdata = null;
+            try {
+                cdata = ConsumeData.parseFrom(consumeType, data);
+            } catch (Throwable e) {
+                logger.error("parse kafka bytes failed, leap this data......");
+                logger.error(e.getMessage(), e);
+                continue;
+            }
             if(cdata == null) {
                 continue;
             }
