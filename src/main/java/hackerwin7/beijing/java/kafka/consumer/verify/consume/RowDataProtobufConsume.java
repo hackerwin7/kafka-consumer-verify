@@ -1,6 +1,6 @@
 package hackerwin7.beijing.java.kafka.consumer.verify.consume;
 
-import com.jd.bdp.magpie.eggs.job.framework.impl.mysql.protocol.protobuf.EventEntry;
+import com.jd.bdp.rdd.magpie.job.framework.impl.mysql.protocol.protobuf.EventEntry;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaData;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaSimpleConsumer;
 import org.apache.commons.collections.CollectionUtils;

@@ -1,7 +1,6 @@
 package hackerwin7.beijing.java.kafka.consumer.verify.protocol.consume;
 
-import com.jd.bdp.magpie.eggs.job.framework.impl.mysql.protocol.protobuf.EventEntry;
-import com.jd.jmq.client.consumer.ConsumerType;
+import com.jd.bdp.rdd.magpie.job.framework.impl.mysql.protocol.protobuf.EventEntry;
 import hackerwin7.beijing.java.kafka.consumer.verify.driver.KafkaData;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.avro.EntryAvroUtils;
 import hackerwin7.beijing.java.kafka.consumer.verify.protocol.avro.EventEntryAvro;
@@ -92,9 +91,13 @@ public class ConsumeData {
         if(consumeType == ConsumeType.PROTOBUF) {
             res.append("-------> src = " + srcs + "\n");
             res.append("-------> cur = " + curs + "\n");
-        } else {
+        } else if(consumeType == ConsumeType.AVRO || consumeType == ConsumeType.ROW_PROTOBUF) {
             res.append("-------> src = " + src + "\n");
             res.append("-------> cur = " + cur + "\n");
+        } else if(consumeType == ConsumeType.STRING) {
+            res.append("-------> string val = " + strVal + "\n");
+        } else {
+            /* no op */
         }
         if(consumeType == ConsumeType.AVRO) {
             res.append("-------> cus = " + cus + "\n");
@@ -103,9 +106,6 @@ public class ConsumeData {
         if(consumeType == ConsumeType.ROW_PROTOBUF) {
             res.append("-------> pre pos = " + prePos + "\n");
             res.append("-------> cur pos = " + curPos + "\n");
-        }
-        if(consumeType == ConsumeType.STRING) {
-            res.append("-------> string val = " + strVal + "\n");
         }
         res.delete(res.length() - 1, res.length());
         return res.toString();
@@ -274,6 +274,7 @@ public class ConsumeData {
             byte[] value = kd.getValue();
             data.setValue(value);
             data.setStrVal(new String(value));
+            data.setConsumeType(ConsumeType.STRING);
         }
         else {
             /*no op*/
