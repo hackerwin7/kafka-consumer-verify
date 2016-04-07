@@ -74,8 +74,8 @@ public class ConsumeData {
                 .append("db = ").append(dbname).append(", ")
                 .append("tb = ").append(tbname).append(", ")
                 .append("timestamp = ").append(timestamp).append(", ")
-                .append("type = ").append(type).append(", ").append(", ")
-                .append("mid = ").append(mid)
+                .append("type = ").append(type).append(", ")
+                .append("mid = ").append(mid).append(", ")
                 .append("value length = ").append(value.length);
         return res.toString();
 
